@@ -16,16 +16,17 @@
         <tr v-for="(facture, i) in factures" :key=i>
             <td> <input type="text" v-model="factures[i].id"> </td>
             <td> <input type="text" v-model="factures[i].designation"> </td>
-            <td> <input type="number" v-model="factures[i].qte"> </td>
-            <td> <input type="text" v-model="factures[i].pu_ht"> </td>
-            <td> <input type="text" v-model="factures[i].tva"> </td>
-            <td> <input type="text" v-model="factures[i].qte * factures[i].pu_ht "> </td>
+            <td> <input type="number" v-model="factures[i].qte" @change="recalcul(i)"> </td>
+            <td> <input type="text" v-model="factures[i].pu_ht" @change="recalcul(i)"> </td>
+            <td> <input type="text" v-model="factures[i].tva" @change="recalcul(i)"> </td>
+            <td> <input type="text" v-model="factures[i].p_ht"> </td>
             <td> <input type="text" v-model="factures[i].p_ttc"> </td>
             <td><button class="suppr" @click="suppr(i)"> {{ supprim | Majuscule }} </button></td>
         </tr>
     </table><br>
     <button class="add" @click="add()"> {{ ligne | Majuscule }} </button><br>
-    <button> {{ PrixHT }} </button><br>
+    <button> PrixHT : {{ PrixHT }} </button><br>
+    <button> PrixTTC : {{ PrixTTC }} </button><br>
     <span> debug : {{ factures }} </span>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
@@ -59,8 +60,18 @@
                 }
             ],
             PrixHT: 0,
+            PrixTTC: 0,
         },
             methods: {
+                recalcul(i){
+                  let ligne = this.factures[i];
+                  let ht = ligne.qte * ligne.pu_ht;
+                  let taux_tva = parseInt(ligne.tva) / 100;
+                  let tva = ht * taux_tva;
+                  let ttc = ht + parseFloat(tva) ;
+                  ligne.p_ht = ht;
+                  ligne.p_ttc = ttc;
+                },
                 add() {
                     this.factures.push({
                         "id": this.factures.length + 1,
@@ -87,12 +98,15 @@
         watch: {
             factures: {
                 handler: function () {
-                    var total = 0;
-                    for (var i = 0; i < this.factures.length; i++) {
-                        total += this.factures[i].p_ht;
+                    console.log('cocou');
+                    let totalHT = 0;
+                    let totalTTC = 0;
+                    for (i = 0; i < this.factures.length; i++) {
+                        totalHT += this.factures[i].p_ht;
+                        totalTTC += this.factures[i].p_ttc;
                     }
-                    this.PrixHT = total;
-
+                    this.PrixHT = totalHT;
+                    this.PrixTTC = totalTTC;
                     localStorage.setItem('factures', JSON.stringify(this.factures));
                 },
                 deep: true,
