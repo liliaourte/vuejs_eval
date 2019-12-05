@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html class="accueil" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Evaluation vuejs</title>
+</head>
+<body>
+<div id="app">
+    <h1> {{ titre | Majuscule }} </h1>
+    <h2>{{ date | Majuscule }}</h2>
+    <table>
+        <tr>
+            <th v-for="(val, i) in todo" :key="i"> {{todo[i]}}</th>
+        </tr>
+        <tr v-for="(facture, i) in factures" :key=i>
+            <td> <input type="text" v-model="factures[i].id"> </td>
+            <td> <input type="text" v-model="factures[i].designation"> </td>
+            <td> <input type="number" v-model="factures[i].qte"> </td>
+            <td> <input type="text" v-model="factures[i].pu_ht"> </td>
+            <td> <input type="text" v-model="factures[i].tva"> </td>
+            <td> <input type="text" v-model="factures[i].qte * factures[i].pu_ht "> </td>
+            <td> <input type="text" v-model="factures[i].p_ttc"> </td>
+            <td><button class="suppr" @click="suppr(i)"> {{ supprim | Majuscule }} </button></td>
+        </tr>
+    </table><br>
+    <button class="add" @click="add()"> {{ ligne | Majuscule }} </button><br>
+    <button> {{ PrixHT }} </button><br>
+    <span> debug : {{ factures }} </span>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script type="text/javascript">
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            ligne: "ajouter une ligne",
+            titre: "evaluation vuejs",
+            supprim: "supprimer",
+            date: "facture du 1er décembre 2019",
+            todo: [ "Id", "Designation", "Dte", "Pu Ht", "Tva", "P Ht", "P Ttc" ],
+            factures: [
+                {
+                    "id": 1,
+                    "designation": "un avion",
+                    "qte": "3",
+                    "pu_ht": 210,
+                    "tva": 20,
+                    "p_ht": 630,
+                    "p_ttc": 907.2
+                },
+                {
+                    "id": 2,
+                    "designation": "un bateau",
+                    "qte": "4",
+                    "pu_ht": 20,
+                    "tva": 0,
+                    "p_ht": 80,
+                    "p_ttc": 80
+                }
+            ],
+            PrixHT: 0,
+        },
+            methods: {
+                add() {
+                    this.factures.push({
+                        "id": this.factures.length + 1,
+                        "designation": "",
+                        "qte": "1",
+                        "pu_ht": "",
+                        "tva": "",
+                        "p_ht": "",
+                        "p_ttc": ""});
+                },
+                suppr(index) {
+                    this.factures.splice(index,1);
+                },
+            },
+            mounted() {
+                if (localStorage.getItem('factures')) {
+                    try {
+                        this.factures = JSON.parse(localStorage.getItem('factures'));
+                    } catch(e) {
+                        localStorage.removeItem('factures');
+                    }
+                }
+            },
+        watch: {
+            factures: {
+                handler: function () {
+                    var total = 0;
+                    for (var i = 0; i < this.factures.length; i++) {
+                        total += this.factures[i].p_ht;
+                    }
+                    this.PrixHT = total;
+
+                    localStorage.setItem('factures', JSON.stringify(this.factures));
+                },
+                deep: true,
+            },
+        },
+
+        filters: {
+            Majuscule : function (value) {
+                if (!value) return '';
+                value = value.toString();
+                return value.charAt(0).toUpperCase() + value.substring(1);
+            }
+        }
+    });
+</script>
+</body>
+</html>
